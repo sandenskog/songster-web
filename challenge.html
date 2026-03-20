@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>You've Been Challenged! — Songster</title>
+<meta property="og:title" content="🎵 Can you beat my score in Songster?">
+<meta property="og:description" content="I challenged you to a music quiz! Listen to 10 songs and place them in the right order.">
+<meta property="og:type" content="website">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, system-ui, sans-serif; background: #0C0520; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
+  .glow { position: fixed; top: -100px; left: 50%; transform: translateX(-50%); width: 500px; height: 500px; background: radial-gradient(circle, rgba(255,45,120,0.15) 0%, transparent 60%); pointer-events: none; }
+  .emoji { font-size: 48px; margin-bottom: 16px; }
+  h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+  h1 span { background: linear-gradient(135deg, #FF2D78, #7B61FF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .challenger { color: #B8A9D4; font-size: 16px; margin-bottom: 24px; }
+  .score-box { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px 40px; margin-bottom: 32px; }
+  .score-label { color: #7B6A9E; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+  .score-value { font-size: 48px; font-weight: 800; color: #FFD700; }
+  .btn { display: inline-block; padding: 16px 40px; border-radius: 999px; background: linear-gradient(135deg, #FF2D78, #7B61FF); color: #fff; font-size: 18px; font-weight: 700; text-decoration: none; letter-spacing: 1px; box-shadow: 0 8px 32px rgba(255,45,120,0.3); margin-bottom: 16px; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(255,45,120,0.4); }
+  .btn-secondary { display: inline-block; padding: 12px 28px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: #B8A9D4; font-size: 14px; font-weight: 600; text-decoration: none; }
+  .footer { margin-top: 48px; font-size: 13px; color: #7B6A9E; }
+  .footer a { color: #7B61FF; text-decoration: none; }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<div class="emoji">🎵</div>
+<h1>You've Been <span>Challenged!</span></h1>
+<p class="challenger" id="challenger-text">Someone challenged you to a music quiz</p>
+
+<div class="score-box">
+  <div class="score-label">Their Score</div>
+  <div class="score-value" id="challenger-score">???</div>
+</div>
+
+<a class="btn" id="open-btn" href="#">ACCEPT CHALLENGE</a><br>
+<a class="btn-secondary" href="https://apps.apple.com/app/songster-music-quiz/id6744053241">Get Songster on the App Store</a>
+
+<div class="footer">
+  <a href="/">songster.live</a> · <a href="/privacy">Privacy</a>
+</div>
+
+<script>
+// Parse challenge token from URL
+const path = window.location.pathname;
+const match = path.match(/\/challenge\/(.+)/);
+if (match) {
+    const token = match[1];
+    try {
+        // URL-safe base64 decode
+        let base64 = token.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) base64 += '=';
+        const json = JSON.parse(atob(base64));
+        
+        if (json.challengerName) {
+            document.getElementById('challenger-text').textContent = 
+                json.challengerName + ' challenged you to a music quiz!';
+        }
+        if (json.challengerScore !== undefined) {
+            document.getElementById('challenger-score').textContent = json.challengerScore;
+        }
+    } catch(e) {}
+    
+    // Deep link: try universal link first, fall back to App Store
+    const universalLink = 'https://songster.live/challenge/' + token;
+    document.getElementById('open-btn').href = universalLink;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appID": "A473BQKT8M.com.sandenskog.songster",
+                "paths": ["/challenge/*"]
+            }
+        ]
+    }
+}
