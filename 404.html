@@ -56,30 +56,48 @@
 </div>
 
 <script>
-// Parse challenge token from URL
-const path = window.location.pathname;
-const match = path.match(/\/challenge\/(.+)/);
-if (match) {
-    const token = match[1];
+// Parse challenge token from URL — supports both v1 (keyed JSON) and v2 (compact array)
+(function() {
+    var path = window.location.pathname;
+    var match = path.match(/\/challenge\/(.+)/);
+    if (!match) return;
+
+    var token = match[1];
+
     try {
         // URL-safe base64 decode
-        let base64 = token.replace(/-/g, '+').replace(/_/g, '/');
+        var base64 = token.replace(/-/g, '+').replace(/_/g, '/');
         while (base64.length % 4) base64 += '=';
-        const json = JSON.parse(atob(base64));
-        
-        if (json.challengerName) {
-            document.getElementById('challenger-text').textContent = 
-                json.challengerName + ' challenged you to a music quiz!';
+        var json = JSON.parse(atob(base64));
+
+        var challengerName = null;
+        var challengerScore = null;
+
+        if (Array.isArray(json) && json[0] === 2 && json.length >= 4) {
+            // v2 compact array: [2, score, name, timestamp, ...songIds]
+            challengerScore = json[1];
+            challengerName = json[2];
+        } else if (typeof json === 'object' && json !== null) {
+            // v1 keyed JSON: { version, songIds, challengerName, challengerScore, createdAt }
+            challengerName = json.challengerName;
+            challengerScore = json.challengerScore;
         }
-        if (json.challengerScore !== undefined) {
-            document.getElementById('challenger-score').textContent = json.challengerScore;
+
+        if (challengerName) {
+            document.getElementById('challenger-text').textContent =
+                challengerName + ' challenged you to a music quiz!';
         }
-    } catch(e) {}
-    
-    // Deep link: try universal link first, fall back to App Store
-    const universalLink = 'https://songster.live/challenge/' + token;
-    document.getElementById('open-btn').href = universalLink;
-}
+        if (challengerScore !== null && challengerScore !== undefined) {
+            document.getElementById('challenger-score').textContent = challengerScore;
+        }
+    } catch(e) {
+        // Token couldn't be decoded — leave defaults
+    }
+
+    // Deep link: the universal link will open the app if installed,
+    // otherwise Safari stays on this page
+    document.getElementById('open-btn').href = window.location.href;
+})();
 </script>
 </body>
 </html>
